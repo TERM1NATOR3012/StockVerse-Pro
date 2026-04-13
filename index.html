@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>StockVerse Pro</title>
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+<style>
+body{
+    margin:0;
+    background:#0b0f1a;
+    color:#e6edf3;
+    font-family:Inter;
+}
+.header{
+    padding:15px;
+    background:#111827;
+    display:flex;
+    justify-content:space-between;
+}
+.card{
+    background:#1f2937;
+    padding:15px;
+    margin:10px;
+    border-radius:10px;
+}
+.stock{
+    display:flex;
+    justify-content:space-between;
+    padding:10px;
+    border-bottom:1px solid #374151;
+}
+.green{color:#00ff88}
+.red{color:#ff4757}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <h2>StockVerse Pro</h2>
+    <button onclick="toggleLayout()">Toggle Layout</button>
+</div>
+
+<div id="chart" style="height:300px"></div>
+
+<div id="stocks"></div>
+
+<script>
+const API = "https://your-app.onrender.com";
+
+let chart = LightweightCharts.createChart(document.getElementById('chart'), {
+    layout: { background: { color: '#0b0f1a' }, textColor: '#e6edf3' }
+});
+
+let candleSeries = chart.addCandlestickSeries();
+
+async function loadChart(symbol="RELIANCE"){
+    const res = await fetch(API + "/api/history/" + symbol);
+    const data = await res.json();
+    candleSeries.setData(data);
+}
+
+async function loadStocks(){
+    const res = await fetch(API + "/api/stocks");
+    const data = await res.json();
+
+    let html = "";
+
+    data.forEach(s=>{
+        let cls = s.close >= s.open ? "green" : "red";
+
+        html += `
+        <div class="stock">
+            <span>${s.symbol}</span>
+            <span class="${cls}">₹${s.price.toFixed(2)}</span>
+        </div>
+        `;
+    });
+
+    document.getElementById("stocks").innerHTML = html;
+}
+
+function toggleLayout(){
+    document.body.classList.toggle("fullscreen");
+}
+
+setInterval(()=>{
+    loadStocks();
+},5000);
+
+loadStocks();
+loadChart();
+</script>
+
+</body>
+</html>
